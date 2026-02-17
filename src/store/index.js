@@ -13,5 +13,49 @@ export const useMainStore = defineStore("main", () => {
     [1, 0, 1, 0, 1, 0, 1, 0],
   ]);
 
-  return { table };
+    const tableHighlight = ref([
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
+
+  const currentChecker = ref(null);
+
+  const currentPlayer = ref(1);
+
+  function changePlayer() {
+    currentPlayer.value = currentPlayer.value === 1 ? 2 : 1; 
+  }
+
+  function resetCurrentChecker() {
+    currentChecker.value = null;
+  }
+
+  function resetTableHightlight() {
+    tableHighlight.value = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    ]
+  }
+
+  return { 
+    table, 
+    tableHighlight, 
+    currentChecker, 
+    resetCurrentChecker, 
+    resetTableHightlight, 
+    currentPlayer,
+    changePlayer
+  };
 });
