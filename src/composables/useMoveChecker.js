@@ -18,4 +18,8 @@ export function useMoveChecker(current) {
     store.resetCurrentChecker();
     store.changePlayer();
   }
+
+
+  emit("useMoveChecker", current);
+
 }

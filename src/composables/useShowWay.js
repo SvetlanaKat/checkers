@@ -28,3 +28,4 @@ export function useShowWay(data) {
     currentChecker: current
   });
 }
+

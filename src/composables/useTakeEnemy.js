@@ -1,7 +1,10 @@
 import { useMainStore } from "@/store";
 import { useUserStore } from "@/store/user";
+// import { useEditWay } from "@/composables/useEditWay.js"
 
 export function useTakeEnemy(cell) {
+
+  // const editWay = useEditWay();
 
   const store = useMainStore();
   const userStore = useUserStore();
