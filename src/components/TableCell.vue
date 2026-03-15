@@ -1,5 +1,5 @@
 <template>
-  <div class="table-cell" @click="useMoveChecker">
+  <div class="table-cell" @click="moveChecker">
     <div v-if="figureType !==0 "
     class="table-cell__figure"
     :class="{
@@ -14,23 +14,13 @@
 </template>
 
 <script setup>
+import { computed, reactive, ref } from 'vue';
 import { storeToRefs } from "pinia";
 import { useMainStore } from "@/store";
+
 const store = useMainStore();
 const { table, currentChecker } = storeToRefs(store);
-
-import { computed, reactive, ref } from 'vue';
-const emit = defineEmits(["useShowWay", "useMoveChecker"]);
-
-import { useMoveChecker } from "@/composables/useMoveChecker.js";
-// function moveChecker () {
-//   useMoveCheckerTable(emit, cx, cy, figureType, current)
-// }
-
-import { useFindWays } from "@/composables/useFindWays.js";
-function findWays() {
-  useFindWays(emit, cx, cy, figureType, current )
-}
+const emit = defineEmits(["showWay", "moveChecker"]);
 
 const props = defineProps({
   data: {
@@ -50,112 +40,110 @@ const current = reactive({
   figureType: figureType.value
 });
 
+// import { useMoveChecker } from "@/composables/useMoveChecker.js";
+// function moveChecker () {
+//   useMoveCheckerTable(emit, cx, cy, figureType, current)
+// }
+
+// import { useFindWays } from "@/composables/useFindWays.js";
+// function findWays() {
+//   useFindWays(emit, cx, cy, figureType, current )
+// }
 const isActive = computed(() =>
 currentChecker.value &&
 currentChecker.value.cx === current.cx &&
 currentChecker.value.cy === current.cy 
 );
 
+function moveCalculate(ways) {
+  const availableWays = {
+    1: ["topLeft", "topRight"],
+    2: ["bottomLeft", "bottomRight"]
+  };
 
-// import { useMoveCalculate } from "@/composables/useMoveCalculate.js";
+  const temp = [];
 
-// import { useCanMove } from "@/composables/useCanMove.js";
+  ways.forEach((way) => {
 
-// import { useEditWay } from "@/composables/useEditWay.js";
+    const { cx, cy, position } = way;
 
-// import { useOnTable } from "@/composables/useOnTable.js";
+    const tableCell = table.value[cy][cx];
 
-// import { useShowWayTable } from "@/composables/useShowWayTable.js";
+    const useCanMove = availableWays[figureType.value].includes(position);
 
-// function moveCalculate(ways) {
-//   const availableWays = {
-//     1: ["topLeft", "topRight"],
-//     2: ["bottomLeft", "bottomRight"]
-//   };
+    if (tableCell === 0 && !useCanMove) return;
 
-//   const temp = [];
+    if (tableCell === 0 && useCanMove) {
+      return temp.push(way);
+    }
 
-//   ways.forEach((way) => {
+    if (tableCell !== figureType.value) {
+      return temp.push(editWay(way))
+    }
+  });
 
-//     const { cx, cy, position } = way;
+  return temp;
+}
 
-//     const tableCell = table.value[cy][cx];
+function onTable(way) {
 
-//     const canMove = availableWays[figureType.value].includes(position);
+  const { cx, cy } = way;
 
-//     if (tableCell === 0 && !canMove) return;
+  return cx >= 0 && cx < 8 && cy >=0 && cy < 8;
+};
 
-//     if (tableCell === 0 && canMove) {
-//       return temp.push(way);
-//     }
+function canMove(way) {
+  const { cx, cy } = way;
 
-//     if (tableCell !== figureType.value) {
-//       return temp.push(editWay(way))
-//     }
-//   });
+  return onTable(way) && table.value[cy][cx] === 0
+}
 
-//   return temp;
-// };
+function findWays() {
 
-// function onTable(way) {
+  let ways = [
+    {
+      position: "topLeft",
+      cx: cx.value - 1,
+      cy: cy.value - 1
+    },
+     {
+      position: "topRight",
+      cx: cx.value + 1,
+      cy: cy.value - 1
+    },
+     {
+      position: "bottomLeft",
+      cx: cx.value - 1,
+      cy: cy.value + 1
+    },
+     {
+      position: "bottomRight",
+      cx: cx.value + 1,
+      cy: cy.value + 1
+    }
+  ].filter(item => onTable(item));
 
-//   const { cx, cy } = way;
+  ways = moveCalculate(ways). filter(item => canMove(item));
 
-//   return cx >= 0 && cx < 8 && cy >=0 && cy < 8;
-// };
+  emit("showWay", { ways, current });
 
-// function canMove(way) {
-//   const { cx, cy } = way;
+};
 
-//   return onTable(way) && table.value[cy][cx] === 0
-// }
+function editWay(way) {
+  const { cx, cy, position } = way;
+  const options = {
+    topLeft: (x, y) => ({ cx: x - 1, cy: y - 1 }),
+    topRight: (x, y) => ({ cx: x + 1, cy: y - 1 }),
+    bottomLeft: (x, y) => ({ cx: x - 1, cy: y + 1 }),
+    bottomRight: (x, y) => ({ cx: x + 1, cy: y + 1 }),
+  };
 
-// function showWay() {
+  return Object.assign({position}, options[position](cx, cy))
+}
 
-//   let ways = [
-//     {
-//       position: "topLeft",
-//       cx: cx.value - 1,
-//       cy: cy.value - 1
-//     },
-//      {
-//       position: "topRight",
-//       cx: cx.value + 1,
-//       cy: cy.value - 1
-//     },
-//      {
-//       position: "bottomLeft",
-//       cx: cx.value - 1,
-//       cy: cy.value + 1
-//     },
-//      {
-//       position: "bottomRight",
-//       cx: cx.value + 1,
-//       cy: cy.value + 1
-//     }
-//   ].filter(item => onTable(item));
-
-//   ways = useMoveCalculate(ways). filter(item => canMove(item));
-
-//   emit("showWay", { ways, current });
-
-// };
-
-// function editWay(way) {
-//   const { cx, cy, position } = way;
-//   const options = {
-//     topLeft: (x, y) => ({ cx: x - 1, cy: y - 1 }),
-//     topRight: (x, y) => ({ cx: x + 1, cy: y - 1 }),
-//     bottomLeft: (x, y) => ({ cx: x - 1, cy: y + 1 }),
-//     bottomRight: (x, y) => ({ cx: x + 1, cy: y + 1 }),
-//   };
-
-//   return Object.assign({position}, options[position](cx, cy))
-// }
-
-// function moveChecker() {
-//   emit("moveChecker", current);
-// }
+function moveChecker() {
+  emit("moveChecker", current);
+}
 
 </script>
 
